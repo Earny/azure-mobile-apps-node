@@ -19,7 +19,8 @@
  * @param {string} MS_DisableVersionHeader If specified, disables x-zumo-server-version header
  * @param {string} MS_SkipVersionCheck If specified, does not validate client api version before serving requests
  * @param {string} MS_AzureStorageAccountConnectionString Connection string to an Azure storage account
- * @param {string} WEBSITE_HOSTNAME Hostname of the mobile app, used as issuer & audience for auth
+ * @param {string} BASE_HOSTNAME Hostname of the app service
+ * @param {string} CUSTOM_HOSTNAME Custom Hostname for the app service
  * @param {string} WEBSITE_AUTH_SIGNING_KEY JWT token signing / validation key
  * @param {string} AZURE_STORAGE_CONNECTION_STRING Connection string to an Azure storage account
  * @param {string} AZURE_STORAGE_ACCOUNT Name of an an Azure storage account
@@ -32,6 +33,7 @@ var connectionString = require('../connectionString'),
 module.exports = function (configuration, environment) {
     configuration = merge(configuration || {});
     configuration.data = configuration.data || {};
+    configuration.auth = [];
     environment = environment || process.env;
 
     Object.keys(environment).forEach(function (key) {
@@ -92,12 +94,16 @@ module.exports = function (configuration, environment) {
                 configuration.skipVersionCheck = parseBoolean(environment[key]);
                 break;
 
-            case 'website_hostname':
-                // using website_hostname to determine that we are hosted on Azure Web Apps
+            case 'base_hostname':
                 configuration.hosted = true;
 
-                configuration.auth.audience = 'https://' + environment[key] + '/';
-                configuration.auth.issuer = 'https://' + environment[key] + '/';
+                configuration.auth.audience.push('https://' + environment[key] + '/');
+                configuration.auth.issuer.push('https://' + environment[key] + '/');
+                break;
+
+            case 'custom_hostname':
+                configuration.auth.audience.push('https://' + environment[key] + '/');
+                configuration.auth.issuer.push('https://' + environment[key] + '/');
                 break;
 
             case 'website_auth_enabled':
