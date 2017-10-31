@@ -6,7 +6,7 @@
 @description Helper functions for working with JWT tokens
 */
 var user = require('./user'),
-    jwt = require('jsonwebtoken'),
+    jwt = require('@earny/jsonwebtoken'),
     promises = require('../utilities/promises');
 
 /**
@@ -74,7 +74,7 @@ res.status(200).send(auth.sign({ sub: "myUserId" }));
             if(!payload.exp)
                 options.expiresIn = (configuration.expires || 1440) * 60;
 
-            console.log('payload', payload, key, options);
+            console.log('creating token', payload, key, options);
             return jwt.sign(payload, key, options);
         }
     };

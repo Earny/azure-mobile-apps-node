@@ -9,7 +9,8 @@ var https = require('https'),
 
 module.exports = function (authConfiguration, token, provider) {
     var endpoint = url.parse(authConfiguration.issuer);
-    
+
+    console.log('auth configuration in identity request', authConfiguration);
     return promises.create(function (resolve, reject) {
         var requestOptions = {
             hostname: endpoint.hostname,

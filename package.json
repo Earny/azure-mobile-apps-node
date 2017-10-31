@@ -1,6 +1,6 @@
 {
   "name": "@earny/azure-mobile-apps",
-  "version": "4.0.1-ey11",
+  "version": "0.0.5",
   "description": "Build mobile apps with data storage, push notifications and offline sync in minutes.",
   "main": "src/index.js",
   "typings": "typings/main.d.ts",
@@ -21,7 +21,7 @@
     "body-parser": "^1.13.1",
     "es6-promise": "^3.1.2",
     "express": "^4.12.4",
-    "jsonwebtoken": "^7.0.0",
+    "@earny/jsonwebtoken": "7.1.6-ey3",
     "mssql": "^3.2.0",
     "ua-parser": "^0.3.5",
     "uuid": "^3.0.0",
