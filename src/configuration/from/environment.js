@@ -106,6 +106,7 @@ module.exports = function (configuration, environment) {
                     }
                 }
                 configuration.auth.issuer = 'https://' + environment[key] + '/';
+                console.log('logging audience', configuration.auth.audience);
                 break;
 
             case 'custom_hostname':
@@ -119,8 +120,11 @@ module.exports = function (configuration, environment) {
                     }
                 }
                 configuration.auth.issuer = 'https://' + environment[key] + '/';
+                console.log('logging audience', configuration.auth.audience);
                 break;
-
+            case 'website_hostname':
+                console.log('logging audience', configuration.auth.audience);
+                break;
             case 'website_auth_enabled':
                 // if EasyAuth is enabled, it will be validating tokens for us
                 configuration.auth.validateTokens = !parseBoolean(environment[key]);

@@ -72,6 +72,7 @@ res.status(200).send(auth.sign({ sub: "myUserId" }));
             if(!payload.exp)
                 options.expiresIn = (configuration.expires || 1440) * 60;
 
+            console.log('payload', payload, key, options);
             return jwt.sign(payload, key, options);
         }
     };
