@@ -31,6 +31,7 @@ else
         */
         validate: function (token) {
             return promises.create(function (resolve, reject) {
+                console.log('token', token);
                 var options = {
                     audience: configuration.audience || 'urn:microsoft:windows-azure:zumo',
                     issuer: configuration.issuer || 'urn:microsoft:windows-azure:zumo'
@@ -63,6 +64,7 @@ res.status(200).send(auth.sign({ sub: "myUserId" }));
         sign: function (payload) {
             var options = { };
 
+            console.log('signing', payload);
             if(!payload.aud)
                 options.audience = configuration.audience || 'urn:microsoft:windows-azure:zumo';
 

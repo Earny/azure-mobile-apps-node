@@ -105,16 +105,7 @@ module.exports = function (configuration, environment) {
                         configuration.auth.audience.push('https://' + environment[key] + '/');
                     }
                 }
-
-                if (!configuration.auth.issuer) {
-                    configuration.auth.issuer = 'https://' + environment[key] + '/';
-                } else {
-                    if (!Array.isArray(configuration.auth.issuer)) {
-                        configuration.auth.issuer = [configuration.auth.issuer, 'https://' + environment[key] + '/'];
-                    } else {
-                        configuration.auth.issuer.push('https://' + environment[key] + '/');
-                    }
-                }
+                configuration.auth.issuer = 'https://' + environment[key] + '/';
                 console.log('logging audience', configuration.auth.audience);
                 break;
 
@@ -128,15 +119,7 @@ module.exports = function (configuration, environment) {
                         configuration.auth.audience.push('https://' + environment[key] + '/');
                     }
                 }
-                if (!configuration.auth.issuer) {
-                    configuration.auth.issuer = 'https://' + environment[key] + '/';
-                } else {
-                    if (!Array.isArray(configuration.auth.issuer)) {
-                        configuration.auth.issuer = [configuration.auth.issuer, 'https://' + environment[key] + '/'];
-                    } else {
-                        configuration.auth.issuer.push('https://' + environment[key] + '/');
-                    }
-                }
+                configuration.auth.issuer = 'https://' + environment[key] + '/';
                 console.log('logging audience', configuration.auth.audience);
                 break;
             case 'website_hostname':
