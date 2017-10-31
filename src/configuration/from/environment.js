@@ -33,7 +33,6 @@ var connectionString = require('../connectionString'),
 module.exports = function (configuration, environment) {
     configuration = merge(configuration || {});
     configuration.data = configuration.data || {};
-    configuration.auth = [];
     environment = environment || process.env;
 
     Object.keys(environment).forEach(function (key) {
@@ -97,13 +96,29 @@ module.exports = function (configuration, environment) {
             case 'base_hostname':
                 configuration.hosted = true;
 
-                configuration.auth.audience.push('https://' + environment[key] + '/');
-                configuration.auth.issuer.push('https://' + environment[key] + '/');
+                if (!configuration.auth.audience) {
+                    configuration.auth.audience = 'https://' + environment[key] + '/';
+                } else {
+                    if (!Array.isArray(configuration.auth.audience)) {
+                        configuration.auth.audience = [configuration.auth.audience, 'https://' + environment[key] + '/'];
+                    } else {
+                        configuration.auth.audience.push('https://' + environment[key] + '/');
+                    }
+                }
+                configuration.auth.issuer = 'https://' + environment[key] + '/';
                 break;
 
             case 'custom_hostname':
-                configuration.auth.audience.push('https://' + environment[key] + '/');
-                configuration.auth.issuer.push('https://' + environment[key] + '/');
+                if (!configuration.auth.audience) {
+                    configuration.auth.audience = 'https://' + environment[key] + '/';
+                } else {
+                    if (!Array.isArray(configuration.auth.audience)) {
+                        configuration.auth.audience = [configuration.auth.audience, 'https://' + environment[key] + '/'];
+                    } else {
+                        configuration.auth.audience.push('https://' + environment[key] + '/');
+                    }
+                }
+                configuration.auth.issuer = 'https://' + environment[key] + '/';
                 break;
 
             case 'website_auth_enabled':
