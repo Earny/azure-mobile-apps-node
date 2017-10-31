@@ -1,6 +1,6 @@
 {
   "name": "@earny/azure-mobile-apps",
-  "version": "4.0.1-ey8",
+  "version": "4.0.1-ey10",
   "description": "Build mobile apps with data storage, push notifications and offline sync in minutes.",
   "main": "src/index.js",
   "typings": "typings/main.d.ts",

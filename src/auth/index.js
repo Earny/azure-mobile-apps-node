@@ -6,7 +6,7 @@
 @description Helper functions for working with JWT tokens
 */
 var user = require('./user'),
-    jwt = require('@earny/jsonwebtoken'),
+    jwt = require('jsonwebtoken'),
     promises = require('../utilities/promises');
 
 /**
