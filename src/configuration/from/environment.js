@@ -19,8 +19,7 @@
  * @param {string} MS_DisableVersionHeader If specified, disables x-zumo-server-version header
  * @param {string} MS_SkipVersionCheck If specified, does not validate client api version before serving requests
  * @param {string} MS_AzureStorageAccountConnectionString Connection string to an Azure storage account
- * @param {string} BASE_HOSTNAME Hostname of the app service
- * @param {string} CUSTOM_HOSTNAME Custom Hostname for the app service
+ * @param {string} WEBSITE_HOSTNAME Hostname of the mobile app, used as issuer & audience for auth
  * @param {string} WEBSITE_AUTH_SIGNING_KEY JWT token signing / validation key
  * @param {string} AZURE_STORAGE_CONNECTION_STRING Connection string to an Azure storage account
  * @param {string} AZURE_STORAGE_ACCOUNT Name of an an Azure storage account
@@ -93,38 +92,13 @@ module.exports = function (configuration, environment) {
                 configuration.skipVersionCheck = parseBoolean(environment[key]);
                 break;
 
-            case 'base_hostname':
+            case 'website_hostname':
                 configuration.hosted = true;
 
-                if (!configuration.auth.audience) {
-                    configuration.auth.audience = 'https://' + environment[key] + '/';
-                } else {
-                    if (!Array.isArray(configuration.auth.audience)) {
-                        configuration.auth.audience = [configuration.auth.audience, 'https://' + environment[key] + '/'];
-                    } else {
-                        configuration.auth.audience.push('https://' + environment[key] + '/');
-                    }
-                }
+                configuration.auth.audience = 'https://' + environment[key] + '/';
                 configuration.auth.issuer = 'https://' + environment[key] + '/';
-                console.log('logging audience', configuration.auth.audience);
                 break;
 
-            case 'custom_hostname':
-                if (!configuration.auth.audience) {
-                    configuration.auth.audience = 'https://' + environment[key] + '/';
-                } else {
-                    if (!Array.isArray(configuration.auth.audience)) {
-                        configuration.auth.audience = [configuration.auth.audience, 'https://' + environment[key] + '/'];
-                    } else {
-                        configuration.auth.audience.push('https://' + environment[key] + '/');
-                    }
-                }
-                configuration.auth.issuer = 'https://' + environment[key] + '/';
-                console.log('logging audience', configuration.auth.audience);
-                break;
-            case 'website_hostname':
-                console.log('logging audience', configuration.auth.audience);
-                break;
             case 'website_auth_enabled':
                 // if EasyAuth is enabled, it will be validating tokens for us
                 configuration.auth.validateTokens = !parseBoolean(environment[key]);

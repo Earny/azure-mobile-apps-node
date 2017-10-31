@@ -76,8 +76,8 @@ Authentication configuration
 @property {string} secret - Key to use to sign and validate JWT tokens
 @property {string} azureSigningKey - Key to use to sign and validate JWT tokens, as taken from a hosted web apps WEBSITE_AUTH_SIGNING_KEY environment variable
 @property {bool} validateTokens - If the Azure Web App authentication is enabled, JWT tokens are only decoded as validation is already performed
-@property {string[]} audience=urn:microsoft:windows-azure:zumo - Token audience claim
-@property {string[]} issuer=urn:microsoft:windows-azure:zumo - Token issuer claim
+@property {string} audience=urn:microsoft:windows-azure:zumo - Token audience claim
+@property {string} issuer=urn:microsoft:windows-azure:zumo - Token issuer claim
 @property {integer} expiresInMinutes=1440 - Expiry of signed tokens
 @see {@link http://jwt.io/}
 @see {@link https://github.com/auth0/node-jsonwebtoken}
