@@ -3,12 +3,20 @@
 // ----------------------------------------------------------------------------
 var https = require('https'),
     url = require('url'),
+    jwt = require('@earny/jsonwebtoken'),
     promises = require('../utilities/promises'),
     log = require('../logger'),
     normalizeClaims = require('./normalizeClaims');
 
 module.exports = function (authConfiguration, token, provider) {
-    var endpoint = url.parse(authConfiguration.issuer);
+    var decodedToken;
+    try {
+      decodedToken = jwt.decode(token);
+    } catch (err) {
+      console.log(err);
+    }
+
+    var endpoint = url.parse(decodedToken.iss || authConfiguration.issuer);
 
     console.log('auth configuration in identity request', authConfiguration, token, provider);
     return promises.create(function (resolve, reject) {
