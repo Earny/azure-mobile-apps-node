@@ -37,11 +37,14 @@ else
                     issuer: configuration.issuer || 'urn:microsoft:windows-azure:zumo'
                 };
 
+                console.log('validating the jwt token');
                 jwt.verify(token, key, options, function (err, claims) {
                     if(err)
                         reject(err);
-                    else
+                    else {
+                        console.log('VALID TOKEN #### going to hit user constructor');
                         resolve(user(configuration, token, claims));
+                    }
                 });
             });
         },

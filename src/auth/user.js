@@ -33,6 +33,7 @@ module.exports = function (authConfiguration, token, claims) {
 
     function getIdentity(provider) {
         // if we've been passed a custom getIdentity function, use it. Mainly to support testing without hitting a gateway.
+        console.log('getting identity', provider);
         if(authConfiguration.getIdentity)
             return authConfiguration.getIdentity(authConfiguration, token, provider);
         return defaultGetIdentity(authConfiguration, token, provider);
