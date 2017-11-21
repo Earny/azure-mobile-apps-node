@@ -13,12 +13,10 @@ module.exports = function (authConfiguration, token, provider) {
     try {
       decodedToken = jwt.decode(token);
     } catch (err) {
-      console.log(err);
     }
 
     var endpoint = url.parse(decodedToken.iss || authConfiguration.issuer);
 
-    console.log('auth configuration in identity request', authConfiguration, token, provider);
     return promises.create(function (resolve, reject) {
         var requestOptions = {
             hostname: endpoint.hostname,

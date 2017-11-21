@@ -31,18 +31,15 @@ else
         */
         validate: function (token) {
             return promises.create(function (resolve, reject) {
-                console.log('token', token);
                 var options = {
                     audience: configuration.audience || 'urn:microsoft:windows-azure:zumo',
                     issuer: configuration.issuer || 'urn:microsoft:windows-azure:zumo'
                 };
 
-                console.log('validating the jwt token');
                 jwt.verify(token, key, options, function (err, claims) {
                     if(err)
                         reject(err);
                     else {
-                        console.log('VALID TOKEN #### going to hit user constructor');
                         resolve(user(configuration, token, claims));
                     }
                 });
@@ -67,7 +64,6 @@ res.status(200).send(auth.sign({ sub: "myUserId" }));
         sign: function (payload) {
             var options = { };
 
-            console.log('signing', payload);
             if(!payload.aud)
                 options.audience = configuration.audience || 'urn:microsoft:windows-azure:zumo';
 
@@ -77,7 +73,6 @@ res.status(200).send(auth.sign({ sub: "myUserId" }));
             if(!payload.exp)
                 options.expiresIn = (configuration.expires || 1440) * 60;
 
-            console.log('creating token', payload, key, options);
             return jwt.sign(payload, key, options);
         }
     };
