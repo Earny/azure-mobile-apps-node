@@ -39,8 +39,13 @@ module.exports = function (authConfiguration, token, provider) {
            });
            response.on('end', function () {
                log.silly('GetIdentity Response: ', responseData);
-               var responseObj = normalizeClaims(JSON.parse(responseData));
-               resolve(responseObj);
+               try {
+                 var responseObj = normalizeClaims(JSON.parse(responseData));
+                 resolve(responseObj);
+               } catch (err) {
+                 console.error('@@@ DEBUG @@@: cannot parse response', endpoint, endpoint.hostname, endpoint.port, responseData);
+                 reject(err);
+               }
            });
         });
         
