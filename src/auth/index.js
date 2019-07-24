@@ -13,9 +13,13 @@ var user = require('./user'),
 function isV2Token(token){
     try {
         if(typeof token === 'string') {
-            var [header, body] = token.split('.');
-            var headerObj = JSON.parse(header);
-            var bodyObj = JSON.parse(body);
+            var parts = token.split('.');
+            if(parts.length <= 0) {
+                return false;
+            }
+            
+            var headerObj = JSON.parse(parts[0]);
+            var bodyObj = JSON.parse(parts[1]);
             if(headerObj && headerObj.key != null){
                 if(bodyObj && bodyObj.iss && bodyObj.iss.indexOf('pharaoh') !== -1) {
                     return bodyObj;
