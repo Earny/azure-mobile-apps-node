@@ -7,7 +7,30 @@
 */
 var user = require('./user'),
     jwt = require('@earny/jsonwebtoken'),
-    promises = require('../utilities/promises');
+    promises = require('../utilities/promises'),
+    got = require('got');
+
+function isV2Token(token){
+    try {
+        if(typeof token === 'string') {
+            var parts = token.split('.');
+            if(parts.length <= 0) {
+                return false;
+            }
+
+            var headerObj = JSON.parse(parts[0]);
+            var bodyObj = JSON.parse(parts[1]);
+            if(headerObj && headerObj.key != null){
+                if(bodyObj && bodyObj.iss && bodyObj.iss.indexOf('pharaoh') !== -1) {
+                    return bodyObj;
+                }
+            }
+        }
+        return false;
+    } catch (e) {
+        return false;
+    }
+}
 
 /**
 Create an instance of a helper based on the supplied configuration.
@@ -16,6 +39,9 @@ Create an instance of a helper based on the supplied configuration.
 */
 module.exports = function (configuration) {
     var key = configuration.azureSigningKey ? hexStringToBuffer(configuration.azureSigningKey) : configuration.secret;
+    var v2VerifyEndpoint = configuration.v2VerifyEndpoint || null;
+    var v2ApiKey = configuration.v2VerifyApiKey || null;
+    var v2Enabled = configuration.v2VerifyEnabled || false;
 
     return {
         /**
@@ -30,6 +56,27 @@ else
     res.status(401).send("You must be logged in");
         */
         validate: function (token) {
+
+            //Feature flag to ensure nothing new is executed unless explicitly enabled
+            if(v2Enabled === true) {
+                var v2Token = v2VerifyEndpoint ? isV2Token(token) : null;
+                if(v2ApiKey && v2Token) {
+                    return promises.create(function(resolve, reject) {
+                        got(v2VerifyEndpoint, {
+                            body: {
+                                'v2token': v2Token,
+                            },
+                            method: 'POST',
+                            headers: {
+                                'Authorization': v2ApiKey,
+                            }
+                        })
+                          .then(() => resolve(user(configuration, token, v2Token)))
+                          .catch((err) => reject(err));
+                    });
+                }
+            }
+
             return promises.create(function (resolve, reject) {
                 var options = {
                     audience: configuration.audience || 'urn:microsoft:windows-azure:zumo',
