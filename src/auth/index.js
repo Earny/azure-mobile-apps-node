@@ -17,7 +17,7 @@ function isV2Token(token){
             if(parts.length <= 0) {
                 return false;
             }
-            
+
             var headerObj = JSON.parse(parts[0]);
             var bodyObj = JSON.parse(parts[1]);
             if(headerObj && headerObj.key != null){
@@ -64,7 +64,7 @@ else
                     return promises.create(function(resolve, reject) {
                         got(v2VerifyEndpoint, {
                             body: {
-                                v2Token: v2Token,
+                                'v2token': v2Token,
                             },
                             method: 'POST',
                             headers: {
