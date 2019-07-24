@@ -54,7 +54,7 @@ else
         validate: function (token) {
 
             //Feature flag to ensure nothing new is executed unless explicitly enabled
-            if(v2Enabled) {
+            if(v2Enabled === true) {
                 var v2Token = v2VerifyEndpoint ? isV2Token(token) : null;
                 if(v2ApiKey && v2Token) {
                     return promises.create(function(resolve, reject) {
