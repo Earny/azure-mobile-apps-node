@@ -131,4 +131,5 @@ module.exports = function (configuration, environment) {
 
 function parseBoolean(value) {
     return (value === true) ||
+      (value && value.toLowerCase() === 'true' || value === '1');
 }
