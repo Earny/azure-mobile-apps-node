@@ -10,6 +10,14 @@ var user = require('./user'),
     promises = require('../utilities/promises'),
     got = require('got');
 
+function parseBase64(str) {
+    try {
+        return JSON.parse(Buffer.from(str, 'base64').toString('utf-8'));
+    } catch(e) {
+        return null;
+    }
+}
+
 function isV2Token(token){
     try {
         if(typeof token === 'string') {
@@ -18,9 +26,10 @@ function isV2Token(token){
                 return false;
             }
 
-            var headerObj = JSON.parse(parts[0]);
-            var bodyObj = JSON.parse(parts[1]);
-            if(headerObj && headerObj.key != null){
+            var headerObj = parseBase64(parts[0]);
+            var bodyObj = parseBase64(parts[1]);
+
+            if(headerObj && headerObj.kid != null){
                 if(bodyObj && bodyObj.iss && bodyObj.iss.indexOf('pharaoh') !== -1) {
                     return bodyObj;
                 }
@@ -28,8 +37,52 @@ function isV2Token(token){
         }
         return false;
     } catch (e) {
+        console.error('error checking v2 token', e);
         return false;
     }
+}
+
+function v2User(configuration, token, data) {
+    return user({
+          ...(configuration || {}),
+          getIdentity: () => { throw new Error('Cannot get identity of v2 user through this method'); }
+      },
+      token,
+      data
+    )
+}
+
+function validateV2Token(endpoint, apikey, authConfig, token) {
+    if(!endpoint) {
+        return promises.rejected(new Error('Invalid v2 endpoint configured: ' + endpoint));
+    }
+
+    var v2Token = isV2Token(token);
+    if(apikey && v2Token) {
+        return promises.create(function(resolve, reject) {
+            got(endpoint, {
+                body: JSON.stringify({
+                    'v2token': token,
+                }),
+                method: 'POST',
+                headers: {
+                    'Authorization': apikey,
+                    'Content-Type': 'application/json',
+                }
+            })
+              .then((a) => {
+                  console.log('success', a);
+                  return resolve(v2User(authConfig, token, v2Token))
+              })
+              .catch((err) => reject(err));
+        });
+    }
+
+    if(apikey == null || apikey.length === 0) {
+        return promises.rejected(new Error('Bad API key for v2 auth'));
+    }
+
+    return promises.rejected(new Error('Invalid token'));
 }
 
 /**
@@ -59,22 +112,7 @@ else
 
             //Feature flag to ensure nothing new is executed unless explicitly enabled
             if(v2Enabled === true) {
-                var v2Token = v2VerifyEndpoint ? isV2Token(token) : null;
-                if(v2ApiKey && v2Token) {
-                    return promises.create(function(resolve, reject) {
-                        got(v2VerifyEndpoint, {
-                            body: {
-                                'v2token': v2Token,
-                            },
-                            method: 'POST',
-                            headers: {
-                                'Authorization': v2ApiKey,
-                            }
-                        })
-                          .then(() => resolve(user(configuration, token, v2Token)))
-                          .catch((err) => reject(err));
-                    });
-                }
+                return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token);
             }
 
             return promises.create(function (resolve, reject) {
@@ -129,5 +167,5 @@ function hexStringToBuffer(hexString) {
     var bytes = [];
     for (var i = 0; i < hexString.length; i += 2)
         bytes.push(parseInt(hexString.substr(i, 2), 16));
-    return new Buffer(bytes);
+    return new Buffer.from(bytes);
 }
