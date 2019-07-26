@@ -195,5 +195,5 @@ function hexStringToBuffer(hexString) {
     var bytes = [];
     for (var i = 0; i < hexString.length; i += 2)
         bytes.push(parseInt(hexString.substr(i, 2), 16));
-    return new Buffer.from(bytes);
+    return new Buffer(bytes);
 }
