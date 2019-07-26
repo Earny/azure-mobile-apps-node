@@ -9,6 +9,7 @@ var user = require('./user'),
     debug = require('debug')('@earny/azure-mobile-apps:auth:validate'),
     jwt = require('@earny/jsonwebtoken'),
     promises = require('../utilities/promises'),
+    retry = require('async-retry'),
     got = require('got');
 
 function parseBase64(str) {
@@ -72,39 +73,44 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
         debug('Validate against v2 endpoint');
         return promises.create(function(resolve, reject) {
             debug('Executing request');
-            got(endpoint, {
-                body: {
-                    'v2token': token,
-                },
-                method: 'POST',
-                headers: {
-                    'Authorization': apikey,
-                    'Content-Type': 'application/json',
-                },
-                json: true,
-            })
-              .then((res) => {
-                  try {
-                      var valid = typeof res.body === 'string' ? JSON.parse(res.body).valid : res.body.valid;
-                      debug('Got response ('+valid+') from v2 verify endpoint');
-                      if (valid && valid.toLowerCase() === 'ok') {
-                          debug('Is valid v2 token');
-                          return resolve(v2User(authConfig, token, v2Token));
+            retry(function(bail) {
+                return got(endpoint, {
+                    body: {
+                        'v2token': token,
+                    },
+                    method: 'POST',
+                    headers: {
+                        'Authorization': apikey,
+                        'Content-Type': 'application/json',
+                    },
+                    json: true,
+                })
+                  .then((res) => {
+                      try {
+                          var valid = typeof res.body === 'string' ? JSON.parse(res.body).valid : res.body.valid;
+                          debug('Got response ('+valid+') from v2 verify endpoint');
+                          if (valid && valid.toLowerCase() === 'ok') {
+                              debug('Is valid v2 token');
+                              return void resolve(v2User(authConfig, token, v2Token));
+                          }
+                          debug('Invalid v2 token');
+                      } catch(e) {
+                          debug('Error was thrown, potentially invalid token: '+e);
+                          return void bail(new Error('Failed to validate'));
                       }
-                      debug('Invalid v2 token');
-                  } catch(e) {
-                      debug('Error was thrown, potentially invalid token: '+e);
-                      return void reject(new Error('Failed to validate'));
-                  }
 
-                  throw new Error('Forbidden');
-              })
+                      return void bail(new Error('Forbidden'));
+                  })
+                  .catch((err) => {
+                      if(err.statusCode === 403)
+                          return void bail(new Error('Forbidden'));
+
+                      console.error(err);
+                      throw new Error('Internal Error');
+                  });
+            }, { retries: 3 })
               .catch((err) => {
-                  if(err.statusCode === 403)
-                    return void reject(new Error('Forbidden'));
-
-                  console.error(err);
-                  return void reject(new Error('Internal Error'));
+                  return void reject(err);
               });
         });
     }
