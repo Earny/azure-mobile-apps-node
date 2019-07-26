@@ -113,9 +113,12 @@ Create an instance of a helper based on the supplied configuration.
 */
 module.exports = function (configuration) {
     var key = configuration.azureSigningKey ? hexStringToBuffer(configuration.azureSigningKey) : configuration.secret;
-    var v2VerifyEndpoint = configuration.v2VerifyEndpoint || null;
-    var v2ApiKey = configuration.v2VerifyApiKey || null;
-    var v2Enabled = configuration.v2VerifyEnabled || false;
+    /**
+     * Pharaoh Integration @TODO Try to make this load from be-mobile if you dare
+     */
+    var v2VerifyEndpoint = process.env.BACKEND_MOBILE_V2_VERIFY_ENDPOINT || null;
+    var v2ApiKey = process.env.BACKEND_MOBILE_V2_APIKEY || null;
+    var v2Enabled = process.env.BACKEND_MOBILE_V2_VERIFY_ENABLED_FLAG === 'true';
 
     return {
         /**
