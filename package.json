@@ -20,6 +20,7 @@
     "azure-query-js": "^0.1.0",
     "azure-sb": "^0.10.3",
     "body-parser": "^1.13.1",
+    "debug": "^4.1.1",
     "es6-promise": "^3.1.2",
     "express": "^4.12.4",
     "got": "^9.6.0",

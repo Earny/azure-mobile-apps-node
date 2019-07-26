@@ -9,6 +9,7 @@ is attached to the request.azureMobile property. If tokens are invalid, a HTTP
 status of 401 is returned to the client.
 */
 var auth = require('../../auth');
+var debug = require('debug')('@earny/azure-mobile-apps:express:authenticate');
 
 /**
 Create a new instance of the authenticate middleware
@@ -34,6 +35,7 @@ module.exports = function(configuration) {
         var authUtils = auth(configuration.auth);
 
         return function(req, res, next) {
+            debug('Authenticate request')
             // If the X-ZUMO-AUTH header is there, use that.  If the X-ZUMO-AUTH
             // header is not there, then look for a Bearer Authorization header.
             var token = req.get('x-zumo-auth') || req.get('authorization');
@@ -48,13 +50,18 @@ module.exports = function(configuration) {
                 req.azureMobile = req.azureMobile || {};
                 req.azureMobile.auth = authUtils;
 
+                debug('Validate token '+(token || '').substring(0, 5));
+
                 if (configuration.auth.validateTokens !== false) {
+                    debug('Will validate token');
                     authUtils.validate(token)
                         .then(function(user) {
+                            debug('Token validated!');
                             req.azureMobile.user = user;
                             next();
                         })
                         .catch(function(error) {
+                            debug('Token is invalid');
                             res.status(401).send(error);
                         });
                 } else {

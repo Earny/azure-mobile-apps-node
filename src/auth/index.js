@@ -6,6 +6,7 @@
 @description Helper functions for working with JWT tokens
 */
 var user = require('./user'),
+    debug = require('debug')('@earny/azure-mobile-apps:auth:validate'),
     jwt = require('@earny/jsonwebtoken'),
     promises = require('../utilities/promises'),
     got = require('got');
@@ -20,9 +21,11 @@ function parseBase64(str) {
 
 function isV2Token(token){
     try {
+        debug('Checking if token '+(token || '').substring(0,5)+' is v2 token');
         if(typeof token === 'string') {
             var parts = token.split('.');
             if(parts.length <= 0) {
+                debug('Is not v2 token, too short: '+parts.length+' segments instead of 2+');
                 return false;
             }
 
@@ -30,11 +33,13 @@ function isV2Token(token){
             var bodyObj = parseBase64(parts[1]);
 
             if(headerObj && headerObj.kid != null){
-                if(bodyObj && bodyObj.iss && bodyObj.iss.indexOf('pharaoh') !== -1) {
+                if(bodyObj && bodyObj.iss && bodyObj.iss.toLowerCase().indexOf('pharaoh') !== -1) {
                     return bodyObj;
                 }
+                debug('Token was not issued by pharaoh');
             }
         }
+        debug('Is not v2 token');
         return false;
     } catch (e) {
         console.error('error checking v2 token', e);
@@ -54,12 +59,19 @@ function v2User(configuration, token, data) {
 
 function validateV2Token(endpoint, apikey, authConfig, token) {
     if(!endpoint) {
+        debug('Invalid v2 endpoint, not v2 token');
         return promises.rejected(new Error('Invalid v2 endpoint configured: ' + endpoint));
+    }
+
+    if(apikey == null || apikey.length === 0) {
+        return promises.rejected(new Error('Bad API key for v2 auth'));
     }
 
     var v2Token = isV2Token(token);
     if(apikey && v2Token) {
+        debug('Validate against v2 endpoint');
         return promises.create(function(resolve, reject) {
+            debug('Executing request');
             got(endpoint, {
                 body: {
                     'v2token': token,
@@ -74,10 +86,14 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
               .then((res) => {
                   try {
                       var valid = typeof res.body === 'string' ? JSON.parse(res.body).valid : res.body.valid;
+                      debug('Got response ('+valid+') from v2 verify endpoint');
                       if (valid && valid.toLowerCase() === 'ok') {
+                          debug('Is valid v2 token');
                           return resolve(v2User(authConfig, token, v2Token));
                       }
+                      debug('Invalid v2 token');
                   } catch(e) {
+                      debug('Error was thrown, potentially invalid token: '+e)
                       return void reject(err);
                   }
 
@@ -85,10 +101,6 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
               })
               .catch((err) => reject(err));
         });
-    }
-
-    if(apikey == null || apikey.length === 0) {
-        return promises.rejected(new Error('Bad API key for v2 auth'));
     }
 
     return promises.rejected(new Error('Invalid token'));
@@ -118,12 +130,16 @@ else
     res.status(401).send("You must be logged in");
         */
         validate: function (token) {
+            debug('Validate token'+(token || '').substring(0, 5));
+            debug('V2 Info: Enabled='+v2Enabled+', endpoint='+v2VerifyEndpoint);
 
             //Feature flag to ensure nothing new is executed unless explicitly enabled
             if(v2Enabled === true) {
+                debug('Validating against v2 system');
                 return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token);
             }
 
+            debug('Validating against v1');
             return promises.create(function (resolve, reject) {
                 var options = {
                     audience: configuration.audience || 'urn:microsoft:windows-azure:zumo',
