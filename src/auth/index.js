@@ -93,13 +93,19 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
                       }
                       debug('Invalid v2 token');
                   } catch(e) {
-                      debug('Error was thrown, potentially invalid token: '+e)
-                      return void reject(err);
+                      debug('Error was thrown, potentially invalid token: '+e);
+                      return void reject(new Error('Failed to validate'));
                   }
 
                   throw new Error('Forbidden');
               })
-              .catch((err) => reject(err));
+              .catch((err) => {
+                  if(err.statusCode === 403)
+                    return void reject(new Error('Forbidden'));
+
+                  console.error(err);
+                  return void reject(new Error('Internal Error'));
+              });
         });
     }
 
