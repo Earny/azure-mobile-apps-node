@@ -61,18 +61,27 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
     if(apikey && v2Token) {
         return promises.create(function(resolve, reject) {
             got(endpoint, {
-                body: JSON.stringify({
+                body: {
                     'v2token': token,
-                }),
+                },
                 method: 'POST',
                 headers: {
                     'Authorization': apikey,
                     'Content-Type': 'application/json',
-                }
+                },
+                json: true,
             })
-              .then((a) => {
-                  console.log('success', a);
-                  return resolve(v2User(authConfig, token, v2Token))
+              .then((res) => {
+                  try {
+                      var valid = typeof res.body === 'string' ? JSON.parse(res.body).valid : res.body.valid;
+                      if (valid && valid.toLowerCase() === 'ok') {
+                          return resolve(v2User(authConfig, token, v2Token));
+                      }
+                  } catch(e) {
+                      return void reject(err);
+                  }
+
+                  throw new Error('Forbidden');
               })
               .catch((err) => reject(err));
         });
