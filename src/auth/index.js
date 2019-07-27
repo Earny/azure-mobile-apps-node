@@ -128,7 +128,8 @@ module.exports = function (configuration) {
 
     if(key){
         const toPrint = key instanceof Buffer ? key.toString() : key;
-        debug('Using key: '+toPrint.substr(0,Math.min(toPrint.length, 3))+'...'+toPrint.substring(Math.max(0, toPrint.length-3)));
+        console.log('AUTH KEY --------------', toPrint, key);
+        debug('Using key: '+toPrint);
     }
     else
         debug('Key is null');
