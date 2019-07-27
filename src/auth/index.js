@@ -166,14 +166,16 @@ else
             debug('Validating against v1');
             return promises.create(function (resolve, reject) {
                 var options = {
+                    algorithms: [ 'HS256' ],
                     audience: configuration.audience || 'urn:microsoft:windows-azure:zumo',
                     issuer: configuration.issuer || 'urn:microsoft:windows-azure:zumo'
                 };
 
                 jwt.verify(token, key, options, function (err, claims) {
-                    if(err)
+                    if(err) {
+                        debug('v1 token failure: '+err);
                         reject(err);
-                    else {
+                    } else {
                         resolve(user(configuration, token, claims));
                     }
                 });
