@@ -158,7 +158,7 @@ else
             debug('V2 Info: Enabled='+v2Enabled+', endpoint='+v2VerifyEndpoint);
 
             //Feature flag to ensure nothing new is executed unless explicitly enabled
-            if(v2Enabled === true) {
+            if(v2Enabled === true && isV2Token(token)) {
                 debug('Validating against v2 system');
                 return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token);
             }
@@ -173,7 +173,6 @@ else
 
                 jwt.verify(token, key, options, function (err, claims) {
                     if(err) {
-                        debug('v1 token failure: '+err);
                         reject(err);
                     } else {
                         resolve(user(configuration, token, claims));
