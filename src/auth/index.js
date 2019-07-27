@@ -125,6 +125,12 @@ Create an instance of a helper based on the supplied configuration.
 */
 module.exports = function (configuration) {
     var key = configuration.azureSigningKey ? hexStringToBuffer(configuration.azureSigningKey) : configuration.secret;
+
+    if(key)
+        debug('Using key: '+key.substring(0,Math.min(key.length, 3))+'...'+key.substring(Math.max(0, key.length-3)));
+    else
+        debug('Key is null');
+
     /**
      * Pharaoh Integration @TODO Try to make this load from be-mobile if you dare
      */
