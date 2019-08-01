@@ -131,7 +131,6 @@ module.exports = function (configuration) {
      */
     var v2VerifyEndpoint = process.env.BACKEND_MOBILE_V2_VERIFY_ENDPOINT || null;
     var v2ApiKey = process.env.BACKEND_MOBILE_V2_APIKEY || null;
-    var v2Enabled = process.env.BACKEND_MOBILE_V2_VERIFY_ENABLED_FLAG === 'true';
 
     return {
         /**
@@ -146,11 +145,8 @@ else
     res.status(401).send("You must be logged in");
         */
         validate: function (token) {
-            debug('Validate token'+(token || '').substring(0, 5));
-            debug('V2 Info: Enabled='+v2Enabled+', endpoint='+v2VerifyEndpoint);
-
             //Feature flag to ensure nothing new is executed unless explicitly enabled
-            if(v2Enabled === true && isV2Token(token)) {
+            if(isV2Token(token)) {
                 debug('Validating against v2 system');
                 return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token);
             }
