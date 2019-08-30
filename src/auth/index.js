@@ -58,7 +58,18 @@ function v2User(configuration, token, data) {
     )
 }
 
-function validateV2Token(endpoint, apikey, authConfig, token) {
+/**
+ *
+ * @param {String} endpoint
+ * @param {String} apikey
+ * @param {*} authConfig
+ * @param {String} token
+ * @param {*} options Options validation options
+ * @param {number} options.timeoutMs Endpoint timeout in ms
+ * @param {number} options.retryCount Max retries for endpoint
+ * @returns {*}
+ */
+function validateV2Token(endpoint, apikey, authConfig, token, options = {}) {
     if(!endpoint) {
         debug('Invalid v2 endpoint, not v2 token');
         return promises.rejected(new Error('Invalid v2 endpoint configured: ' + endpoint));
@@ -84,6 +95,7 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
                         'Content-Type': 'application/json',
                     },
                     json: true,
+                    timeout: options.timeoutMs,
                 })
                   .then((res) => {
                       try {
@@ -108,7 +120,7 @@ function validateV2Token(endpoint, apikey, authConfig, token) {
                       console.error(err);
                       throw new Error('Internal Error');
                   });
-            }, { retries: 3 })
+            }, { retries: options.retryCount })
               .catch((err) => {
                   return void reject(err);
               });
@@ -131,6 +143,8 @@ module.exports = function (configuration) {
      */
     var v2VerifyEndpoint = process.env.BACKEND_MOBILE_V2_VERIFY_ENDPOINT || null;
     var v2ApiKey = process.env.BACKEND_MOBILE_V2_APIKEY || null;
+    var v2VerifyEndpointTimeout = +(process.env.BACKEND_MOBILE_VERIFY_ENDPOINT_TIMEOUT || (10 * 1000));
+    var v2VerifyEndpointRetryCount = +(process.env.BACKEND_MOBILE_VERIFY_ENDPOINT_RETRY_COUNT || 5);
 
     return {
         /**
@@ -148,7 +162,10 @@ else
             //Feature flag to ensure nothing new is executed unless explicitly enabled
             if(isV2Token(token)) {
                 debug('Validating against v2 system');
-                return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token);
+                return validateV2Token(v2VerifyEndpoint, v2ApiKey, configuration, token, {
+                    retryCount: v2VerifyEndpointRetryCount,
+                    timeoutMs: v2VerifyEndpointTimeout,
+                });
             }
 
             debug('Validating against v1');
